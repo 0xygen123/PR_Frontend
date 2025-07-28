@@ -1,0 +1,39 @@
+/* UnityStyles.css など */
+.unity-canvas-large-and-centered {
+  width: 80vw;  /* 画面の幅の80% */
+  height: 70vh; /* 画面の高さの70% */
+  /* 必要に応じて最大のピクセルサイズも指定できます */
+  /* max-width: 1200px; */
+  /* max-height: 800px; */
+  border: 1px solid #ddd; /* 任意: 境界線を見やすくするため */
+}
+
+/* App.css */
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: sans-serif; /* 任意: 基本フォント */
+}
+
+.app-layout {
+  display: flex;
+  flex-direction: column; /* ヘッダーとUnityラッパーを縦に並べる */
+  min-height: 100vh;     /* 画面全体の高さを最低でも確保 */
+}
+
+.unity-wrapper {
+  flex-grow: 1; /* ヘッダー以外の残りの垂直スペースをすべて使う */
+  display: flex;
+  justify-content: center; /* 水平方向の中央揃え */
+  align-items: center;    /* 垂直方向の中央揃え */
+  padding: 20px; /* 任意: Unityコンテンツの周りに少し余白 */
+  box-sizing: border-box; /* paddingを含めてサイズ計算 */
+}
+
+/* Headerのスタイル (任意、調整用) */
+.app-layout > div:first-child { /* Headerコンポーネントを指す想定 */
+  background-color: #f0f0f0;
+  padding: 10px 20px;
+  text-align: center;
+}
