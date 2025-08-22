@@ -1,6 +1,6 @@
 import { AlertTriangle, Smartphone } from 'lucide-react';
 import { Button } from './ui/button';
-
+2
 interface WalkingPhoneAlertProps {
   onComplete: () => void;
 }
@@ -32,6 +32,7 @@ export function WalkingPhoneAlert({ onComplete }: WalkingPhoneAlertProps) {
         >
           閉じる
         </Button>
+
       </div>
     </div>
   );

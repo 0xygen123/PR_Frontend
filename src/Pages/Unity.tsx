@@ -24,8 +24,16 @@ const UnityButton = ({sendMessage}:UnityButtonProps) => {
   }
   return(
     <>
-    <button onClick={() => handleClick(RandomLocation)}>適当な座標を送信</button>
-    <button onClick={() => handleClick(Error)}>空の座標を送信</button>
+    <button 
+      onClick={() => handleClick(RandomLocation)}
+      className="mt-4 px-4 py-2 rounded bg-primary text-primary-foreground">
+      適当な座標を送信
+    </button>
+    <button
+      onClick={() => handleClick(Error)}
+      className="mt-4 px-4 py-2 rounded bg-primary text-primary-foreground">
+      空の座標を送信
+    </button>
     </>
   )
 }

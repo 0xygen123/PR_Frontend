@@ -5,13 +5,15 @@ import { WalkingPhoneAlert } from "./components/WalkingPhoneAlert";
 import { HomeScreen } from "./components/HomeScreen";
 import { SearchScreen } from "./components/SearchScreen";
 import { NavigationScreen } from "./components/NavigationScreen";
+import { UnityScreen } from './components/UnityScreen';
 
 type Screen =
   | "splash"
   | "alert"
   | "home"
   | "search"
-  | "navigation";
+  | "navigation"
+  | "unity";
 
 export default function App() {
 
@@ -50,6 +52,10 @@ export default function App() {
   const handleStartNavigation = () => {
     setCurrentScreen("navigation");
   };
+
+  const handleNavigateToUnity = () => {
+  setCurrentScreen("unity");
+};
 
   const handleQuickNavigation = (location: string) => {
     const locationMap: Record<string, { building: string; room: string }> = {
@@ -101,6 +107,9 @@ export default function App() {
             onBack={handleBackToHome}
           />
         );
+      case "unity":
+        return <UnityScreen onBack={handleBackToHome} />;
+
       default:
         return (
           <HomeScreen
@@ -122,6 +131,13 @@ export default function App() {
         >
           {darkMode ? 'ライトモードに切替' : 'ダークモードに切替'}
         </button>
+
+      <button
+        onClick={handleNavigateToUnity}
+        className="mb-4 ml-2 px-4 py-2 rounded bg-primary text-primary-foreground"
+      >
+      Unityのテスト動作
+      </button>
 
         {renderScreen()}
       </div>
