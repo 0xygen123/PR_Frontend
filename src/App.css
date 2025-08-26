@@ -129,6 +129,7 @@
   }
 }
 
+
 /**
  * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
  */
@@ -190,4 +191,11 @@ html {
 
 .cursor-hidden {
   cursor: none;
+}
+
+* {
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* IE10+ */
+  user-select: none;         /* Standard */
 }

@@ -21,7 +21,7 @@ export function BuildingList() {
   useEffect(() => {
     const fetchBuildings = async () => {
       try {
-        const response = await fetch('??????????????');
+        const response = await fetch('http://100.104.15.110:8080/api/buildings');
         
         if (!response.ok) {
           throw new Error('サーバーからの応答がありません');
