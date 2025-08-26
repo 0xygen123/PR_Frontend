@@ -1,4 +1,4 @@
-import Unity from "../Pages/Unity"
+import Unity from "./Unity"
 
 interface UnityScreenProps {
   onBack: () => void;
