@@ -1,4 +1,6 @@
-import { RoomsByBuilding } from './types';
+import type { RoomsByBuilding } from './types';
+
+
 
 /**
  * 検索機能で使用する定数定義ファイル
@@ -13,7 +15,7 @@ export const buildings: string[] = [
   '5号館', // 5号館
   '図書館', // 図書館
   '体育館', // 体育館
-  '食堂' // 食堂
+  '食堂', // 食堂
 ];
 
 // 各号館に対応する教室のマップ

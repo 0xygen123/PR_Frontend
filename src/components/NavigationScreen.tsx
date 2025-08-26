@@ -1,72 +1,33 @@
-import {
-  ArrowLeft,
-  Navigation,
-  RotateCcw,
-  RotateCw,
-  ZoomIn,
-  ZoomOut,
-} from "lucide-react";
-import { Button } from "./ui/button";
-
-interface NavigationScreenProps {
-  building: string;
-  room: string;
-  onBack: () => void;
-}
-
-export function NavigationScreen({
-  building,
-  room,
-  onBack,
-}: NavigationScreenProps) {
-  return (
+export const NavigationScreen = ({ building, room, onBack }: { building: string; room: string; onBack: () => void; }) => (
     <div className="h-full flex flex-col">
       {/* ヘッダー */}
       <div className="bg-red-600 text-white p-4 flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="text-white hover:bg-blue-700"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
+        <button onClick={onBack} className="p-2 rounded-full hover:bg-red-700">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        </button>
         <div className="flex-1">
-          <h1>ストリートビュー</h1>
-          <p className="opacity-90">
-            {building} {room}
-          </p>
+          <h1 className="font-bold">ストリートビュー</h1>
+          <p className="opacity-90 text-sm">{building} {room}</p>
         </div>
       </div>
-
       {/* ストリートビューエリア */}
-      <div className="flex-1 relative bg-gray-200">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-gray-500">
-            <Navigation className="w-16 h-16 mx-auto mb-4" />
-            <p>ストリートビュー</p>
-            <p className="mt-1 opacity-75">
-              実際の実装では360度パノラマ画像を表示
-            </p>
+      <div className="flex-1 relative bg-gray-200 flex items-center justify-center">
+        
+        <div className="absolute top-4 left-4 bg-white p-3 rounded-lg shadow-md flex items-center gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 text-blue-500 -rotate-90">
+            <path d="M2 21l20-9L2 3v7l11 2-11 2v7z"/>
+          </svg>
+          <div>
+            <p className="text-sm text-gray-500">目的地</p>
+            <p className="font-semibold">{building} {room}</p>
           </div>
         </div>
 
-        {/* コントロールボタン */}
-        <div className="absolute bottom-4 right-4 flex flex-col gap-2">
-          <Button size="sm" variant="secondary">
-            <RotateCcw className="w-4 h-4" />
-          </Button>
-          <Button size="sm" variant="secondary">
-            <RotateCw className="w-4 h-4" />
-          </Button>
-          <Button size="sm" variant="secondary">
-            <ZoomIn className="w-4 h-4" />
-          </Button>
-          <Button size="sm" variant="secondary">
-            <ZoomOut className="w-4 h-4" />
-          </Button>
+        <div className="text-center text-gray-500">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-4 h-16 w-16"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+            <p>ストリートビュー</p>
+            <p className="mt-1 opacity-75">実際の実装では360度パノラマ画像を表示</p>
         </div>
       </div>
     </div>
-  );
-}
+);

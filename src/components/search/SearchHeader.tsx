@@ -25,7 +25,7 @@ export function SearchHeader({
         variant="ghost" // ゴーストバリアント（背景なし）
         size="sm" // 小さいサイズ
         onClick={onBack} // クリック時に戻る処理を実行
-        className="text-white hover:bg-blue-700" // 白いテキスト、ホバー時青背景
+        className="text-white hover:bg-white" // 白いテキスト、ホバー時青背景
       >
         <ArrowLeft className="w-4 h-4" /> {/* 左矢印アイコン */}
       </Button>

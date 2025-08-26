@@ -165,13 +165,15 @@ export default function App() {
   };
 
   return (
-    // darkMode が true のときに全体へ `dark` クラスを付与
-    <div className={`${darkMode ? 'dark' : ''} h-screen w-full bg-background`}>
+    // App全体を縦方向のflexコンテナに変更
+    <div className={`${darkMode ? 'dark' : ''} h-screen w-full bg-background flex flex-col`}>
+      
+      {/* 上部のボタン類を配置するヘッダーエリア */}
       <div className="p-4">
         {/* ダークモード切替ボタン */}
         <button
           onClick={toggleTheme}
-          className="mb-4 px-4 py-2 rounded bg-accent text-accent-foreground"
+          className="mb-4 px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-black dark:text-white"
         >
           {darkMode ? 'ライトモードに切替' : 'ダークモードに切替'}
         </button>
@@ -179,11 +181,15 @@ export default function App() {
         {/* Unityテスト画面へ遷移するボタン */}
         <button
           onClick={handleNavigateToUnity}
-          className="mb-4 ml-2 px-4 py-2 rounded bg-primary text-primary-foreground"
+          className="mb-4 ml-2 px-4 py-2 rounded bg-blue-600 text-white"
         >
           Unityのテスト動作
         </button>
+      </div>
 
+      {/* 各画面を描画するメインエリア */}
+      {/* flex-1 を指定して、残りの高さいっぱいに広がるように設定 */}
+      <div className="flex-1 p-4 pt-0">
         {/* 現在の画面を描画 */}
         {renderScreen()}
       </div>
