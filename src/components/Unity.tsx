@@ -3,9 +3,11 @@ import '../CSS/UnityBuild.css';
 import UnityMessageDisplay from "../components/UnityMessageDisplay"
 import GetLocation from "../components/GetLocation"
 import GetDirection from "../components/GetDirection"
+//import { Button } from "./ui/button";
 
 const RandomLocation = "12,12"
 const Error = "";
+const destinationPosition = "student_hall,1b";
 
 // sendMessageプロップの型定義
 interface UnityButtonProps {
@@ -16,6 +18,23 @@ interface UnityButtonProps {
   ) => void;
 }
 
+
+//ボタンをクリックして目的地を送信
+const Destination = ({sendMessage}:UnityButtonProps) => {
+  function DestinationClick(destination:string){
+    sendMessage("JSInterface","PathfindingRequested",destination);
+  }
+
+  return(
+    <>
+    <button
+      onClick={() => DestinationClick(destinationPosition)}
+      className="mt-4 px-4 py-2 rounded bg-primary text-primary-foreground">
+      目的地を送信
+    </button>
+    </>
+  )
+}
 
 //ボタンをクリックしてキューブを移動
 const UnityButton = ({sendMessage}:UnityButtonProps) => {
@@ -49,21 +68,23 @@ const Header = () =>{
 
 const MapGuidance = () => {
     const { unityProvider ,sendMessage} = useUnityContext({
-    loaderUrl: "../../Build/54c707f8f74796c1b22158ff640ef3b7.loader.js",
-    dataUrl: "../../Build/81ba31f2fef3fc7aec33b79d2e84d79e.date",
-    frameworkUrl: "../../Build/d9661d51b1e138b59964585efd47b10a.framework.js",
-    codeUrl: "../../Build/3a35eb2958e942bd069bcb9a514adb14.wasm",
+    loaderUrl: "/Build/54c707f8f74796c1b22158ff640ef3b7.loader.js",
+    dataUrl: "/Build/81ba31f2fef3fc7aec33b79d2e84d79e.data",
+    frameworkUrl: "/Build/d9661d51b1e138b59964585efd47b10a.framework.js",
+    codeUrl: "/Build/3a35eb2958e942bd069bcb9a514adb14.wasm",
   })
   return(
   <>
 
   <div>
   <Header/>
+  <Destination sendMessage={sendMessage}></Destination>
   <UnityButton sendMessage={sendMessage}/>
   <Unity unityProvider={unityProvider} className="unity-canvas-large-and-centered"/>
   <UnityMessageDisplay />
   <GetLocation sendMessage={sendMessage}/>
   <GetDirection />
+  
   </div> 
 
   </>
