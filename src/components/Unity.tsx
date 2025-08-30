@@ -49,10 +49,10 @@ const Header = () =>{
 
 const MapGuidance = () => {
     const { unityProvider ,sendMessage} = useUnityContext({
-    loaderUrl: "../../Build/Build.loader.js",
-    dataUrl: "../../Build/Build.data",
-    frameworkUrl: "../../Build/Build.framework.js",
-    codeUrl: "../../Build/Build.wasm",
+    loaderUrl: "../../Build/54c707f8f74796c1b22158ff640ef3b7.loader.js",
+    dataUrl: "../../Build/81ba31f2fef3fc7aec33b79d2e84d79e.date",
+    frameworkUrl: "../../Build/d9661d51b1e138b59964585efd47b10a.framework.js",
+    codeUrl: "../../Build/3a35eb2958e942bd069bcb9a514adb14.wasm",
   })
   return(
   <>
