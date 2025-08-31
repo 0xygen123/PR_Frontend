@@ -1,10 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ScrollArea } from './ui/scroll-area';
 import { SearchHeader } from './search/SearchHeader';
-import { BuildingSelector } from './search/BuildingSelector';
-import { RoomSelector } from './search/RoomSelector';
 import { SelectedLocationDisplay } from './search/SelectedLocationDisplay';
-import { SearchResults } from './search/SearchResults';
 import type { SearchResult } from './search/types';
 
 // SearchScreenコンポーネントのプロパティ型定義
@@ -22,6 +19,7 @@ interface SearchScreenProps {
  * - APIから建物一覧を取得
  * - 選択された建物の部屋一覧をAPIで取得
  * - 選択した建物IDをUnityサーバーに送信
+ * - 建物・教室選択をプルダウンで行う
  */
 export function SearchScreen({
   onBack,
@@ -36,9 +34,9 @@ export function SearchScreen({
 
   // APIから取得した建物一覧を管理するstate
   const [buildings, setBuildings] = useState<{ id: number; building_name: string }[]>([]);
-  // 建物一覧の読み込み状態とエラー状態を管理するstate
+  // 建物一覧の読み込み状態を管理
   const [loadingBuildings, setLoadingBuildings] = useState(true);
-  // エラーメッセージを保存するstate（null許容）
+  // エラーメッセージを管理
   const [errorBuildings, setErrorBuildings] = useState<string | null>(null);
 
   /**
@@ -53,7 +51,7 @@ export function SearchScreen({
         const data: { id: number; building_name: string }[] = await res.json();
         setBuildings(data); // APIから取得した建物をstateに保存
       } catch (err) {
-        if (err instanceof Error) setErrorBuildings(err.message);
+        if (err instanceof Error) setErrorBuildings(err.message); // エラーメッセージをセット
       } finally {
         setLoadingBuildings(false); // 読み込み終了
       }
@@ -85,14 +83,14 @@ export function SearchScreen({
 
       const rooms: { id: number; room_name: string }[] = await res.json();
 
-      // 検索結果形式に変換
+      // 検索結果形式に変換してstateにセット
       const results: SearchResult[] = rooms.map(r => ({
         building: buildingName,
         room: r.room_name
       }));
-      setSearchResults(results); // 検索結果を更新
+      setSearchResults(results);
 
-      // Unity側に選択した建物IDを送信
+      // Unityサーバーに選択した建物IDを送信
       await fetch('http://100.104.15.110:8080/api/unity/sendBuilding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -110,8 +108,9 @@ export function SearchScreen({
    * @param room 選択された教室名
    */
   const handleRoomSelect = (room: string) => {
+    // 同じ教室を再度選択した場合はクリア
     if (selectedRoom === room) {
-      setSelectedRoom(''); // 同じ教室を再度押した場合はクリア
+      setSelectedRoom('');
       if (selectedBuilding) {
         // 建物の全部屋を再表示
         const rooms = searchResults.map(r => r.room);
@@ -121,7 +120,7 @@ export function SearchScreen({
       return;
     }
 
-    setSelectedRoom(room); // 新しい教室を選択
+    setSelectedRoom(room);
 
     // 特定の教室のみを検索結果に設定
     if (selectedBuilding) {
@@ -152,22 +151,33 @@ export function SearchScreen({
         selectedRoom={selectedRoom}
       />
 
-      {/* メインコンテンツ */}
+      {/* メイン */}
       <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-full">
           <div className="p-4 space-y-4">
 
-            {/* 建物選択 */}
+            {/* ===== 建物プルダウン ===== */}
             <div>
-              <BuildingSelector
-                buildings={buildings.map(b => b.building_name)} // 名前だけ渡す
-                selectedBuilding={selectedBuilding}
-                onBuildingSelect={(buildingName: string) => {
-                  // 名前からIDを取得してhandleBuildingSelect呼び出し
+              <label htmlFor="buildingSelect" className="block mb-1 font-medium">
+                建物を選択
+              </label>
+              <select
+                id="buildingSelect"
+                className="border rounded p-2 w-full"
+                value={selectedBuilding}
+                onChange={(e) => {
+                  const buildingName = e.target.value;
                   const building = buildings.find(b => b.building_name === buildingName);
                   if (building) handleBuildingSelect(building.id, building.building_name);
                 }}
-              />
+              >
+                <option value="">-- 選択してください --</option>
+                {buildings.map(b => (
+                  <option key={b.id} value={b.building_name}>
+                    {b.building_name}
+                  </option>
+                ))}
+              </select>
 
               {/* 選択された建物・教室の表示 */}
               <SelectedLocationDisplay
@@ -176,17 +186,27 @@ export function SearchScreen({
               />
             </div>
 
-            {/* 教室選択（建物選択済みの場合のみ表示） */}
+            {/* ===== 教室プルダウン（建物選択済みの場合のみ表示） ===== */}
             {selectedBuilding && (
-              <RoomSelector
-                rooms={searchResults.map(r => r.room)} // APIで取得した部屋名リスト
-                selectedRoom={selectedRoom}
-                onRoomSelect={handleRoomSelect}
-              />
+              <div className="mt-4">
+                <label htmlFor="roomSelect" className="block mb-1 font-medium">
+                  教室を選択
+                </label>
+                <select
+                  id="roomSelect"
+                  className="border rounded p-2 w-full"
+                  value={selectedRoom}
+                  onChange={(e) => handleRoomSelect(e.target.value)}
+                >
+                  <option value="">-- 選択してください --</option>
+                  {searchResults.map(r => (
+                    <option key={r.room} value={r.room}>
+                      {r.room}
+                    </option>
+                  ))}
+                </select>
+              </div>
             )}
-
-            {/* 検索結果表示 */}
-            <SearchResults searchResults={searchResults} />
 
           </div>
         </ScrollArea>
