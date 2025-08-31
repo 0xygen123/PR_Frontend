@@ -1,3 +1,4 @@
+//号館選択
 import { Building } from 'lucide-react';
 import { Button } from '../ui/button';
 

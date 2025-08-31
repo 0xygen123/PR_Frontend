@@ -1,3 +1,4 @@
+//教室選択
 import { DoorOpen } from 'lucide-react';
 import { Button } from '../ui/button';
 

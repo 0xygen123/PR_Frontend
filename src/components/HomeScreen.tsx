@@ -1,16 +1,40 @@
-const Button = ({ onClick, children, className}: { onClick?: () => void, children: React.ReactNode, className?: string, variant?: string, size?: string }) => (
-    <button onClick={onClick} className={`border p-2 rounded ${className}`}>
-        {children}
-    </button>
+// ボタンコンポーネント
+const Button = (
+  { onClick, children, className }: {
+    onClick?: () => void,             // クリック時の処理
+    children: React.ReactNode,        // ボタン内に表示する要素（テキストやアイコン）
+    className?: string,               // 追加のスタイルクラス
+    variant?: string,                 // デザイン
+    size?: string                     // サイズ
+  }
+) => (
+  // デフォルトの枠線・余白・角丸を持つボタン
+  <button onClick={onClick} className={`border p-2 rounded ${className}`}>
+    {children} 
+  </button>
 );
 
-const Card = ({ children, className }: { children: React.ReactNode, className?: string }) => (
-    <div className={`bg-white shadow rounded-lg ${className}`}>
-        {children}
-    </div>
+// カードコンポーネント
+const Card = (
+  { children, className }: {
+    children: React.ReactNode, // カード内に表示する要素
+    className?: string         // 追加のスタイルクラス
+  }
+) => (
+  // 白背景・影付き・角丸のカードレイアウト
+  <div className={`bg-white shadow rounded-lg ${className}`}>
+    {children} // カード内のコンテンツ
+  </div>
 );
 
-export const HomeScreen = ({ onSearchClick, onQuickNavigation }: { onSearchClick: () => void; onQuickNavigation: (location: string) => void; }) => {
+// ホーム画面コンポーネント
+export const HomeScreen = (
+  { onSearchClick, onQuickNavigation }: {
+    onSearchClick: () => void,                // 検索ボタンが押された時の処理
+    onQuickNavigation: (location: string) => void // クイックナビ押下時の処理
+  }
+) => {
+  // よく使う場所のショートカット一覧
   const quickLocations = [
     { name: "図書館", icon: "📚" },
     { name: "食堂", icon: "🍽️" },
@@ -18,7 +42,9 @@ export const HomeScreen = ({ onSearchClick, onQuickNavigation }: { onSearchClick
     { name: "体育館", icon: "🏃" },
   ];
 
+
   return (
+     // 全体を縦並びレイアウトにするコンテナ
     <div className="h-full flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       {/* ヘッダー */}
       <div className="bg-red-700 text-white p-4">
@@ -40,7 +66,9 @@ export const HomeScreen = ({ onSearchClick, onQuickNavigation }: { onSearchClick
         </Button>
       </div>
 
+      {/* 地図表示エリア */}
       <div className="flex-1 relative bg-gray-100 dark:bg-gray-800 m-4 rounded-lg overflow-hidden">
+         {/* 中央に「読み込み中」を表示 */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-gray-500">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-16 h-16 mx-auto mb-4"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -51,6 +79,7 @@ export const HomeScreen = ({ onSearchClick, onQuickNavigation }: { onSearchClick
           </div>
         </div>
 
+      {/* 左上に現在地カード */}
         <Card className="absolute top-4 left-4 p-3">
           <div className="flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-blue-600"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>

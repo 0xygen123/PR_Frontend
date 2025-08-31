@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+
+/*ライトテーマ*/
 :root {
   --font-size: 14px;
   --background: #ffffff;

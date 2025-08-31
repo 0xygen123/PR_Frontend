@@ -1,3 +1,4 @@
+//検索結果表示
 import { MapPin } from 'lucide-react';
 import { Card } from '../ui/card';
 
@@ -12,7 +13,7 @@ interface SearchResultsProps {
   searchResults: SearchResult[]; // 表示する検索結果の配列
 }
 
-/**
+/*
  * 検索結果表示コンポーネント
  * 選択された号館の教室一覧をカード形式で表示する
  */

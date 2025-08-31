@@ -1,3 +1,4 @@
+//選択された場所の表示
 import { MapPin } from 'lucide-react';
 
 // SelectedLocationDisplayコンポーネントのプロパティ型定義
