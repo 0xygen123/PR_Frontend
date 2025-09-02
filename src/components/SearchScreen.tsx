@@ -1,133 +1,216 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ScrollArea } from './ui/scroll-area';
 import { SearchHeader } from './search/SearchHeader';
-import { BuildingSelector } from './search/BuildingSelector';
-import { RoomSelector } from './search/RoomSelector';
 import { SelectedLocationDisplay } from './search/SelectedLocationDisplay';
-import { SearchResults } from './search/SearchResults';
-import { buildings, roomsByBuilding } from './search/constants';
 import type { SearchResult } from './search/types';
 
 // SearchScreenコンポーネントのプロパティ型定義
 interface SearchScreenProps {
-  onBack: () => void; // 戻るボタンが押された時のコールバック関数
-  onStartNavigation: () => void; // 案内開始ボタンが押された時のコールバック関数
-  selectedBuilding: string; // 現在選択されている号館名
+  onBack: () => void; // 戻るボタンが押された時のコールバック
+  onStartNavigation: () => void; // 案内開始ボタンが押された時のコールバック
+  selectedBuilding: string; // 選択中の号館名
   setSelectedBuilding: (building: string) => void; // 号館選択状態を更新する関数
-  selectedRoom: string; // 現在選択されている教室名
+  selectedRoom: string; // 選択中の教室名
   setSelectedRoom: (room: string) => void; // 教室選択状態を更新する関数
 }
 
 /**
- * 検索画面のメインコンポーネント
- * 号館と教室の選択、検索結果の表示を管理する
+ * SearchScreen
+ * - APIから建物一覧を取得
+ * - 選択された建物の部屋一覧をAPIで取得
+ * - 選択内容をUnityサーバーに送信
+ *   - 建物選択時: buildingId を送信
+ *   - 部屋選択時: buildingId + roomId を送信
+ * - 建物・教室選択をプルダウンで行う
  */
-export function SearchScreen({ 
-  onBack, // 戻るボタンのクリックハンドラー
-  onStartNavigation, // 案内開始ボタンのクリックハンドラー
-  selectedBuilding, // 選択中の号館
-  setSelectedBuilding, // 号館選択状態の更新関数
-  selectedRoom, // 選択中の教室
-  setSelectedRoom // 教室選択状態の更新関数
+export function SearchScreen({
+  onBack,
+  onStartNavigation,
+  selectedBuilding,
+  setSelectedBuilding,
+  selectedRoom,
+  setSelectedRoom
 }: SearchScreenProps) {
-  // 検索結果の状態管理
+  /**
+   * 検索結果（部屋一覧）を管理するstate
+   * - buildingId, roomId を保持するように拡張
+   */
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 
+  // APIから取得した建物一覧を管理するstate
+  const [buildings, setBuildings] = useState<{ id: number; building_name: string }[]>([]);
+  // 建物一覧の読み込み状態を管理
+  const [loadingBuildings, setLoadingBuildings] = useState(true);
+  // エラーメッセージを管理
+  const [errorBuildings, setErrorBuildings] = useState<string | null>(null);
+
   /**
-   * 号館選択時の処理関数
-   * @param building 選択された号館名
+   * 初回レンダリング時に建物一覧をAPIから取得
    */
-  const handleBuildingSelect = (building: string) => {
-    // 同じ号館を再度押した場合はキャンセル
-    if (selectedBuilding === building) {
-      setSelectedBuilding(''); // 号館選択をクリア
-      setSelectedRoom(''); // 教室選択をクリア
-      setSearchResults([]); // 検索結果をクリア
-      return; // 処理を終了
+  useEffect(() => {
+    const fetchBuildings = async () => {
+      try {
+        const res = await fetch('http://100.104.15.110:8080/api/buildings');
+        if (!res.ok) throw new Error('建物一覧の取得に失敗しました');
+
+        const data: { id: number; building_name: string }[] = await res.json();
+        setBuildings(data); // APIから取得した建物をstateに保存
+      } catch (err) {
+        if (err instanceof Error) setErrorBuildings(err.message); // エラーメッセージをセット
+      } finally {
+        setLoadingBuildings(false); // 読み込み終了
+      }
+    };
+    fetchBuildings();
+  }, []);
+
+  /**
+   * 号館選択時の処理
+   * @param buildingId 選択された建物のID
+   * @param buildingName 選択された建物名
+   */
+  const handleBuildingSelect = async (buildingId: number, buildingName: string) => {
+    // 選択状態を更新
+    setSelectedBuilding(buildingName);
+    setSelectedRoom('');
+
+    try {
+      // 選択された建物の部屋一覧をAPIで取得
+      const res = await fetch(`http://100.104.15.110:8080/api/buildings/${buildingId}/rooms`);
+      if (!res.ok) throw new Error('部屋一覧の取得に失敗しました');
+
+      const rooms: { id: number; room_name: string }[] = await res.json();
+
+      // 検索結果形式に変換してstateにセット
+      const results: SearchResult[] = rooms.map(r => ({
+        building: buildingName,
+        buildingId,
+        room: r.room_name,
+        roomId: r.id
+      }));
+      setSearchResults(results);
+
+      /*
+      // Unityサーバーに選択した建物IDを送信
+      // → 建物だけなので buildingId のみ送信
+      await fetch('http://100.104.15.110:8080/api/unity/sendBuilding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ buildingId })
+      });*/
+
+    } catch (err) {
+      if (err instanceof Error) console.error(err.message);
+      setSearchResults([]); // 取得失敗時は空にする
     }
-    
-    setSelectedBuilding(building); // 新しい号館を選択
-    setSelectedRoom(''); // 教室選択をリセット
-    
-    // 建物を選択したら、その建物の全ての部屋を表示
-    const rooms = roomsByBuilding[building] || []; // 選択された号館の教室リストを取得
-    const results = rooms.map(room => ({ building, room })); // 検索結果形式に変換
-    setSearchResults(results); // 検索結果を更新
   };
 
   /**
-   * 教室選択時の処理関数
+   * 教室選択時の処理
    * @param room 選択された教室名
    */
-  const handleRoomSelect = (room: string) => {
-    // 同じ教室を再度押した場合はキャンセル
-    if (selectedRoom === room) {
-      setSelectedRoom(''); // 教室選択をクリア
-      // 建物の全ての部屋を再表示
-      if (selectedBuilding) {
-        const rooms = roomsByBuilding[selectedBuilding] || []; // 号館の全教室を取得
-        const results = rooms.map(r => ({ building: selectedBuilding, room: r })); // 検索結果形式に変換
-        setSearchResults(results); // 検索結果を更新
-      }
-      return; // 処理を終了
-    }
-    
-    setSelectedRoom(room); // 新しい教室を選択
-    
-    // 特定の部屋を選択したら、その部屋のみを結果に表示
-    if (selectedBuilding) {
-      setSearchResults([{ building: selectedBuilding, room }]); // 選択された教室のみを検索結果に設定
+  const handleRoomSelect = async (room: string) => {
+    // 教室の選択状態を更新
+    setSelectedRoom(room);
+
+    // 選択された部屋情報を検索結果から取得
+    const selected = searchResults.find(r => r.room === room);
+    if (selected) {
+      // 検索結果をその教室1つに絞る
+      setSearchResults([selected]);
+      /*
+      // Unityサーバーに buildingId と roomId を送信
+      await fetch('http://100.104.15.110:8080/api/unity/sendBuilding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          buildingId: selected.building,
+          roomId: selected.room
+        })
+      });*/
     }
   };
 
   /**
-   * 案内開始時の処理関数
+   * 案内開始処理
    */
   const handleNavigate = () => {
-    onStartNavigation(); // 親コンポーネントの案内開始処理を呼び出し
+    onStartNavigation();
   };
 
+  // 建物一覧が読み込み中の場合
+  if (loadingBuildings) return <div>建物一覧を読み込み中...</div>;
+
+  // 建物一覧取得に失敗した場合
+  if (errorBuildings) return <div>建物一覧取得エラー: {errorBuildings}</div>;
+
   return (
-    <div className="h-full flex flex-col"> {/* 全画面高さのフレックスコンテナ */}
+    <div className="h-full flex flex-col">
       {/* ヘッダー */}
       <SearchHeader
-        onBack={onBack} // 戻るボタンの処理
-        onNavigate={handleNavigate} // 案内開始ボタンの処理
-        selectedBuilding={selectedBuilding} // 選択中の号館
-        selectedRoom={selectedRoom} // 選択中の教室
+        onBack={onBack}
+        onNavigate={handleNavigate}
+        selectedBuilding={selectedBuilding}
+        selectedRoom={selectedRoom}
       />
 
-      {/* メインコンテンツエリア */}
-      <div className="flex-1 overflow-hidden"> {/* 残り高さを占有し、オーバーフローを隠す */}
-        <ScrollArea className="h-full"> {/* スクロール可能エリア */}
-          <div className="p-4 space-y-4"> {/* パディングと要素間スペース */}
-            
-            {/* 号館選択セクション */}
+      {/* メイン */}
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full">
+          <div className="p-4 space-y-4">
+
+            {/* ===== 建物プルダウン ===== */}
             <div>
-              <BuildingSelector
-                buildings={buildings} // 利用可能な号館リスト
-                selectedBuilding={selectedBuilding} // 選択中の号館
-                onBuildingSelect={handleBuildingSelect} // 号館選択時の処理
-              />
-              
-              {/* 選択された場所の表示 */}
+              <label htmlFor="buildingSelect" className="block mb-1 font-medium">
+                建物を選択
+              </label>
+              <select
+                id="buildingSelect"
+                className="border rounded p-2 w-full"
+                value={selectedBuilding}
+                onChange={(e) => {
+                  const buildingName = e.target.value;
+                  const building = buildings.find(b => b.building_name === buildingName);
+                  if (building) handleBuildingSelect(building.id, building.building_name);
+                }}
+              >
+                <option value="">-- 選択してください --</option>
+                {buildings.map(b => (
+                  <option key={b.id} value={b.building_name}>
+                    {b.building_name}
+                  </option>
+                ))}
+              </select>
+
+              {/* 選択された建物・教室の表示 */}
               <SelectedLocationDisplay
-                selectedBuilding={selectedBuilding} // 選択中の号館
-                selectedRoom={selectedRoom} // 選択中の教室
+                selectedBuilding={selectedBuilding}
+                selectedRoom={selectedRoom}
               />
             </div>
 
-            {/* 教室選択セクション（号館が選択されている場合のみ表示） */}
+            {/* ===== 教室プルダウン（建物選択済みの場合のみ表示） ===== */}
             {selectedBuilding && (
-              <RoomSelector
-                rooms={roomsByBuilding[selectedBuilding] || []} // 選択された号館の教室リスト
-                selectedRoom={selectedRoom} // 選択中の教室
-                onRoomSelect={handleRoomSelect} // 教室選択時の処理
-              />
+              <div className="mt-4">
+                <label htmlFor="roomSelect" className="block mb-1 font-medium">
+                  教室を選択
+                </label>
+                <select
+                  id="roomSelect"
+                  className="border rounded p-2 w-full"
+                  value={selectedRoom}
+                  onChange={(e) => handleRoomSelect(e.target.value)}
+                >
+                  <option value="">-- 選択してください --</option>
+                  {searchResults.map(r => (
+                    <option key={r.room} value={r.room}>
+                      {r.room}
+                    </option>
+                  ))}
+                </select>
+              </div>
             )}
 
-            {/* 検索結果セクション */}
-            <SearchResults searchResults={searchResults} />
           </div>
         </ScrollArea>
       </div>
