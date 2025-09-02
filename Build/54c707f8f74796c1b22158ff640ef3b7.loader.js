@@ -191,7 +191,7 @@ function createUnityInstance(canvas, config, onProgress) {
     },
     SendMessage: function () {
       if (Module.SendMessage)
-        return Module.SendMessage.apply(Module, arguments);
+        return Module..apply(Module, arguments);
       Module.print("Failed to execute SendMessage: Player not loaded yet.");
     },
     Quit: function () {

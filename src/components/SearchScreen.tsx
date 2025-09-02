@@ -15,6 +15,20 @@ interface SearchScreenProps {
 }
 
 /**
+ * Unity WebGL にメッセージを送信するラッパー
+ * @param gameObject Unity 側のオブジェクト名
+ * @param func 呼び出すメソッド名
+ * @param param 渡すパラメータ（文字列 or 数値）
+ */
+function sendMessage(gameObject: string, func: string, param?: string | number) {
+  const ModuleAny = (window as any).Module;
+  if (ModuleAny?.SendMessage) {
+    ModuleAny.SendMessage(gameObject, func, param);
+  }
+}
+
+
+/**
  * SearchScreen
  * - APIから建物一覧を取得
  * - 選択された建物の部屋一覧をAPIで取得
@@ -31,10 +45,8 @@ export function SearchScreen({
   selectedRoom,
   setSelectedRoom
 }: SearchScreenProps) {
-  /**
-   * 検索結果（部屋一覧）を管理するstate
-   * - buildingId, roomId を保持するように拡張
-   */
+
+  // 検索結果（部屋一覧）を管理するstate
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 
   // APIから取得した建物一覧を管理するstate
@@ -66,17 +78,17 @@ export function SearchScreen({
 
   /**
    * 号館選択時の処理
-   * @param buildingId 選択された建物のID
+   * @param building_id 選択された建物のID
    * @param buildingName 選択された建物名
    */
-  const handleBuildingSelect = async (buildingId: number, buildingName: string) => {
+  const handleBuildingSelect = async (building_id: number, buildingName: string) => {
     // 選択状態を更新
     setSelectedBuilding(buildingName);
     setSelectedRoom('');
 
     try {
       // 選択された建物の部屋一覧をAPIで取得
-      const res = await fetch(`http://100.104.15.110:8080/api/buildings/${buildingId}/rooms`);
+      const res = await fetch(`http://100.104.15.110:8080/api/buildings/${building_id}/rooms`);
       if (!res.ok) throw new Error('部屋一覧の取得に失敗しました');
 
       const rooms: { id: number; room_name: string }[] = await res.json();
@@ -84,50 +96,40 @@ export function SearchScreen({
       // 検索結果形式に変換してstateにセット
       const results: SearchResult[] = rooms.map(r => ({
         building: buildingName,
-        buildingId,
+        building_id,
         room: r.room_name,
-        roomId: r.id
+        room_id: r.id
       }));
       setSearchResults(results);
 
-      /*
-      // Unityサーバーに選択した建物IDを送信
-      // → 建物だけなので buildingId のみ送信
-      await fetch('http://100.104.15.110:8080/api/unity/sendBuilding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ buildingId })
-      });*/
-
+      // Unityに建物IDを送信
+      sendMessage("MapManager", "SetBuilding", building_id);
+      
+      
     } catch (err) {
       if (err instanceof Error) console.error(err.message);
-      setSearchResults([]); // 取得失敗時は空にする
+      setSearchResults([]);
     }
   };
 
   /**
    * 教室選択時の処理
-   * @param room 選択された教室名
+   * @param room_id 選択された教室ID
+   * @param roomName 選択された教室名
    */
-  const handleRoomSelect = async (room: string) => {
+  const handleRoomSelect = async (roomName: string) => {
     // 教室の選択状態を更新
-    setSelectedRoom(room);
+    setSelectedRoom(roomName);
 
     // 選択された部屋情報を検索結果から取得
-    const selected = searchResults.find(r => r.room === room);
+    const selected = searchResults.find(r => r.room === roomName);
     if (selected) {
       // 検索結果をその教室1つに絞る
       setSearchResults([selected]);
-      /*
-      // Unityサーバーに buildingId と roomId を送信
-      await fetch('http://100.104.15.110:8080/api/unity/sendBuilding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          buildingId: selected.building,
-          roomId: selected.room
-        })
-      });*/
+
+      // Unityに buildingId + roomId を送信
+      const messageData = `${selected.building},${selected.room}`;
+      sendMessage("MapManager", "SetRoom", messageData);
     }
   };
 
@@ -138,7 +140,7 @@ export function SearchScreen({
     onStartNavigation();
   };
 
-  // 建物一覧が読み込み中の場合
+  // 建物一覧が読み込み中
   if (loadingBuildings) return <div>建物一覧を読み込み中...</div>;
 
   // 建物一覧取得に失敗した場合
@@ -159,7 +161,7 @@ export function SearchScreen({
         <ScrollArea className="h-full">
           <div className="p-4 space-y-4">
 
-            {/* ===== 建物プルダウン ===== */}
+            {/* 建物プルダウン */}
             <div>
               <label htmlFor="buildingSelect" className="block mb-1 font-medium">
                 建物を選択
@@ -189,7 +191,7 @@ export function SearchScreen({
               />
             </div>
 
-            {/* ===== 教室プルダウン（建物選択済みの場合のみ表示） ===== */}
+            {/* 教室プルダウン（建物選択済みの場合のみ表示） */}
             {selectedBuilding && (
               <div className="mt-4">
                 <label htmlFor="roomSelect" className="block mb-1 font-medium">

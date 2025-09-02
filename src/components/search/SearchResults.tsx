@@ -39,7 +39,7 @@ export function SearchResults({
               <div>
                 {/* 号館名 */}
                 <p className="font-medium">{result.building}</p>
-                
+
                 {/* 教室名 */}
                 <p className="text-muted-foreground opacity-75">{result.room}</p>
               </div>
