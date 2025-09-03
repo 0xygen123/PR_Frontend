@@ -113,25 +113,25 @@ export function SearchScreen({
   };
 
   /**
-   * 教室選択時の処理
-   * @param room_id 選択された教室ID
-   * @param roomName 選択された教室名
-   */
-  const handleRoomSelect = async (roomName: string) => {
-    // 教室の選択状態を更新
-    setSelectedRoom(roomName);
+ * 教室選択時の処理
+ * @param roomName 選択された教室名
+ * @param room_id  選択された教室ID
+ */
+const handleRoomSelect = async (roomName: string) => {
+  // 教室の選択状態を更新
+  setSelectedRoom(roomName);
 
-    // 選択された部屋情報を検索結果から取得
-    const selected = searchResults.find(r => r.room === roomName);
-    if (selected) {
-      // 検索結果をその教室1つに絞る
-      setSearchResults([selected]);
+  // 選択された部屋情報を検索結果から取得
+  const selected = searchResults.find(r => r.room === roomName);
+  if (selected) {
+    // 検索結果をその教室1つに絞る
+    setSearchResults([selected]);
 
-      // Unityに buildingId + roomId を送信
-      const messageData = `${selected.building},${selected.room}`;
-      sendMessage("MapManager", "SetRoom", messageData);
-    }
-  };
+    // Unityに building_Id-room_Id を送信（ハイフン区切り）
+    const payload = `${selected.building}-${selected.room}`;
+    sendMessage("MapManager", "SetRoom", payload);
+  }
+};
 
   /**
    * 案内開始処理
