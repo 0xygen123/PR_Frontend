@@ -127,7 +127,7 @@ const handleRoomSelect = async (roomName: string) => {
     // 検索結果をその教室1つに絞る
     setSearchResults([selected]);
 
-    // Unityに building_Id-room_Id を送信（ハイフン区切り）
+    // Unityに building_Id-room_Id を送信
     const payload = `${selected.building}-${selected.room}`;
     sendMessage("MapManager", "SetRoom", payload);
   }
