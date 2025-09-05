@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { Unity, useUnityContext } from "react-unity-webgl";
+import {isMobile} from "react-device-detect";
+import {osName} from "react-device-detect";
 
 // --- Type Definitions ---
 
@@ -56,11 +58,11 @@ const ErrorPopup = ({ isOpen, message, onClose }: { isOpen: boolean; message: st
 
 export const HomeScreen = ({ onSearchClick, onQuickNavigation }: { onSearchClick: () => void; onQuickNavigation: (location: string) => void; }) => {
     // Unityのコンテキストを初期化し、sendMessage関数を取得
-    const { unityProvider, sendMessage } = useUnityContext({
-        loaderUrl: "Build/Build.loader.js",
-        dataUrl: "Build/Build.data",
-        frameworkUrl: "Build/Build.framework.js",
-        codeUrl: "Build/Build.wasm",
+    const { unityProvider, sendMessage ,isLoaded} = useUnityContext({
+        loaderUrl: "/Build/54c707f8f74796c1b22158ff640ef3b7.loader.js",
+        dataUrl: "/Build/81ba31f2fef3fc7aec33b79d2e84d79e.data",
+        frameworkUrl: "/Build/d9661d51b1e138b59964585efd47b10a.framework.js",
+        codeUrl: "/Build/3a35eb2958e942bd069bcb9a514adb14.wasm",
     });
 
     // 位置情報用のState
@@ -73,6 +75,20 @@ export const HomeScreen = ({ onSearchClick, onQuickNavigation }: { onSearchClick
     // ポップアップ表示用のState
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [popupMessage, setPopupMessage] = useState("");
+
+    const [useOS, setUseOS] = useState("");
+
+    //デバイスを認識して、Unityに送信
+    useEffect(() => {
+        if(isLoaded){
+            console.log("Desktop OS Detected");
+            console.log(osName);
+            setUseOS(osName);
+        }else if(isLoaded && isMobile){
+            console.log("Mobile Device Detected");
+        }
+
+    }, [isLoaded]);
 
     // Unityからのメッセージを監視するuseEffect
     useEffect(() => {
@@ -226,6 +242,10 @@ export const HomeScreen = ({ onSearchClick, onQuickNavigation }: { onSearchClick
                             {location.name}
                         </Button>
                     ))}
+                </div>
+
+                <div>
+                    <p>使用OS: {useOS}</p>
                 </div>
             </div>
         </div>

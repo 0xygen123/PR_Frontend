@@ -113,6 +113,9 @@ export const NavigationScreen = ({ building, room, onBack }: { building: string;
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [popupMessage, setPopupMessage] = useState("");
 
+    //switch button
+    const [switchButton, setswitchButton] = useState("2D");
+
     // --- ここから追加 ---
     /**
      * Unityの準備が完了したら、目的地を送信する
@@ -205,9 +208,22 @@ export const NavigationScreen = ({ building, room, onBack }: { building: string;
     };
 
     // 空の座標を送信してエラーを発生させる関数
+    /*
     const sendEmptyCoordinates = () => {
         sendMessage("JSInterface", "SetLocation", "");
     };
+    */
+
+    const ViewSwitch = (currentView : string) => {
+        if(currentView === "2D"){
+            sendMessage("JSInterface", "SwitchToPlaneView");
+            setswitchButton("3D");
+        }
+        else{
+            sendMessage("JSInterface", "SwitchToSolidView");
+            setswitchButton("2D");
+        }
+    }
 
     return (
         <div className="h-full flex flex-col">
@@ -254,15 +270,27 @@ export const NavigationScreen = ({ building, room, onBack }: { building: string;
                             </p>
                         </div>
                     </div>
+                    {/*
                     {/* 空の座標を送信するボタン */}
-                    <div className="absolute bottom-4 right-4">
+                    {/* <div className="absolute bottom-4 right-4">
                         <button
                             onClick={sendEmptyCoordinates}
                             className="px-4 py-2 bg-orange-500 text-white rounded-lg shadow-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50"
                         >
                             空の座標を送信
                         </button>
+                    </div> */}
+
+                    {/*2D3D切り替えボタン */}
+                     <div className="absolute bottom-4 right-4">
+                        <button
+                            onClick={() => {ViewSwitch(switchButton)}}
+                            className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                        >
+                            {switchButton}に切り替え
+                        </button>
                     </div>
+                    
                 </div>
             </div>
         </div>
