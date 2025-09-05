@@ -1,6 +1,58 @@
 import { useState, useEffect } from "react";
 import { Unity, useUnityContext } from "react-unity-webgl";
 
+const findRoom = async (building: string, room: string) => {
+  try {
+    const res = await fetch(`http://100.104.15.110:8080/api/buildings?name=${building}`);
+    //let unity_id = res.unity_id;
+    const Building_data = await res.json();
+    const Building_id = Building_data[0].id;
+
+    const res2 = await fetch(`http://100.104.15.110:8080/api/buildings/${Building_id}/rooms?name=${room}`);
+    const Room_data = await res2.json();
+    //本当はこれを送る
+    const unity_id = Room_data[0].unity_id;
+    
+    const newunity_id = unity_id.replace("-",",");
+    console.log(newunity_id);
+
+
+    // レスポンスが正常でない場合（404, 500エラーなど）
+    if (!res.ok) {
+      throw new Error('サーバーからの応答が正常ではありません。');
+    }
+
+    return newunity_id
+
+  } catch (err) {
+    // ネットワークエラーや上記でthrowしたエラーをキャッチ
+    console.error("部屋情報の取得に失敗しました:", err);
+    return null; // エラー発生時にnullを返す
+  }
+};
+
+const findBuilding = async (building: string) => {
+  try {
+    const res = await fetch(`http://100.104.15.110:8080/api/buildings?name=${building}`);
+    //let unity_id = res.unity_id;
+    const Building_data = await res.json();
+    const unity_id = Building_data[0].unity_id;
+    console.log(unity_id);
+
+    // レスポンスが正常でない場合（404, 500エラーなど）
+    if (!res.ok) {
+      throw new Error('サーバーからの応答が正常ではありません。');
+    }
+
+    return unity_id;
+
+  } catch (err) {
+    // ネットワークエラーや上記でthrowしたエラーをキャッチ
+    console.error("建物情報の取得に失敗しました:", err);
+    return null; // エラー発生時にnullを返す
+  }
+};
+
 // --- Type Definitions ---
 
 interface GeolocationState {
@@ -43,7 +95,7 @@ const ErrorPopup = ({ isOpen, message, onClose }: { isOpen: boolean; message: st
 
 export const NavigationScreen = ({ building, room, onBack }: { building: string; room: string; onBack: () => void; }) => {
     // Unityのコンテキストを初期化し、sendMessage関数を取得
-    const { unityProvider, sendMessage } = useUnityContext({
+    const { unityProvider, sendMessage, isLoaded } = useUnityContext({
         loaderUrl: "/Build/54c707f8f74796c1b22158ff640ef3b7.loader.js",
         dataUrl: "/Build/81ba31f2fef3fc7aec33b79d2e84d79e.data",
         frameworkUrl: "/Build/d9661d51b1e138b59964585efd47b10a.framework.js",
@@ -60,6 +112,45 @@ export const NavigationScreen = ({ building, room, onBack }: { building: string;
     // ポップアップ表示用のState
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [popupMessage, setPopupMessage] = useState("");
+
+    // --- ここから追加 ---
+    /**
+     * Unityの準備が完了したら、目的地を送信する
+     */
+    useEffect(() => {
+    // useEffectの中で非同期処理を行うためのasync関数を定義
+    const fetchAndSendMessage = async () => {
+        if (isLoaded && building && room) {
+            // await を使って、findRoomの結果（Promise）が解決されるのを待つ
+            const unity_id = await findRoom(building, room);
+
+            // unity_idが正常に取得できた場合のみメッセージを送信
+            if (unity_id) {
+                sendMessage("JSInterface", "PathfindingRequested", unity_id);
+                console.log(`Unityに目的地IDを送信しました: ${unity_id}`);
+            } else {
+                console.error("Unity IDの取得に失敗したため、メッセージは送信されませんでした。");
+            }
+        }
+
+        if(isLoaded && building && !room){
+            const unity_id = await findBuilding(building);
+
+            // unity_idが正常に取得できた場合のみメッセージを送信
+            if (unity_id) {
+                sendMessage("JSInterface", "PathfindingRequested", unity_id);
+                console.log(`Unityに目的地IDを送信しました: ${unity_id}`);
+            } else {
+                console.error("Unity IDの取得に失敗したため、メッセージは送信されませんでした。");
+            }
+        }
+    };
+
+    // 定義した非同期関数を実行
+    fetchAndSendMessage();
+
+}, [isLoaded, building, room, sendMessage]);
+
 
     // Unityからのメッセージを監視するuseEffect
     useEffect(() => {
@@ -158,8 +249,8 @@ export const NavigationScreen = ({ building, room, onBack }: { building: string;
                             <p className="font-semibold text-sm">
                                 {location.error ? <span className="text-red-500">{location.error}</span> :
                                  location.latitude && location.longitude
-                                    ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`
-                                    : "取得中..."}
+                                     ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`
+                                     : "取得中..."}
                             </p>
                         </div>
                     </div>

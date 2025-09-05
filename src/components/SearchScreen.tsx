@@ -103,7 +103,7 @@ export function SearchScreen({
       setSearchResults(results);
 
       // Unityに建物IDを送信
-      sendMessage("MapManager", "SetBuilding", building_id);
+      sendMessage("JSInterface","PathfindingRequested",building_id);
       
       
     } catch (err) {
@@ -129,7 +129,7 @@ export function SearchScreen({
 
       // Unityに buildingId + roomId を送信
       const messageData = `${selected.building},${selected.room}`;
-      sendMessage("MapManager", "SetRoom", messageData);
+      sendMessage("JSInterface","PathfindingRequested",messageData);
     }
   };
 
