@@ -244,32 +244,43 @@ export const NavigationScreen = ({ building, room, onBack }: { building: string;
             </div>
 
             {/* Unityアプリケーション表示エリア */}
-            <div className="flex-1 min-h-0 px-4 py-8">
+            <div className="flex-1 min-h-0">
                 <div className="w-full h-full bg-gray-900 rounded-lg relative overflow-hidden">
                     <Unity unityProvider={unityProvider} className="w-full h-full" />
-                    {/* 目的地表示カード */}
-                    <div className="absolute top-4 left-4 bg-white p-3 rounded-lg shadow-md flex items-center gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="currentColor" className="h-5 w-5 text-blue-500 -rotate-90">
-                            <path d="M2 21l20-9L2 3v7l11 2-11 2v7z" />
-                        </svg>
-                        <div>
-                            <p className="text-sm text-gray-500">目的地</p>
-                            <p className="font-semibold">{building} {room}</p>
-                        </div>
-                    </div>
-                    {/* 現在地表示カード */}
-                    <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-md flex items-center gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-green-600"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
-                        <div>
-                            <p className="text-sm text-gray-500">現在地</p>
-                            <p className="font-semibold text-sm">
-                                {location.error ? <span className="text-red-500">{location.error}</span> :
-                                 location.latitude && location.longitude
-                                     ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`
-                                     : "取得中..."}
-                            </p>
-                        </div>
-                    </div>
+            {/* 目的地表示カード */}
+            <div className="absolute top-4 left-4 bg-white p-3 rounded-lg shadow-md flex items-center gap-3 max-w-xs">
+                
+                <div className="flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-blue-500">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+                </div>
+                
+                <div>
+                    <p className="text-sm text-gray-500">目的地</p>
+                    <p className="font-semibold truncate">{building} {room}</p>
+                </div>
+            </div>
+
+            {/* 現在地表示カード */}
+            <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-md flex items-center gap-3 max-w-xs">
+                <div className="flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7 text-green-600">
+                        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                        <circle cx="12" cy="10" r="3" />
+                    </svg>
+                </div>
+                <div>
+                    <p className="text-sm text-gray-500">現在地</p>
+                    <p className="font-semibold text-sm truncate">
+                        {location.error ? <span className="text-red-500">{location.error}</span> :
+                            location.latitude && location.longitude
+                                ? `${location.latitude.toFixed(2)}, ${location.longitude.toFixed(2)}`
+                                : "取得中..."}
+                    </p>
+                </div>
+            </div>
                     {/*
                     {/* 空の座標を送信するボタン */}
                     {/* <div className="absolute bottom-4 right-4">
