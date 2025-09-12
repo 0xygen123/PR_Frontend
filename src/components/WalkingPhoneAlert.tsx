@@ -7,7 +7,7 @@ interface WalkingPhoneAlertProps {
 
 export function WalkingPhoneAlert({ onComplete }: WalkingPhoneAlertProps) {
   return (
-    <div className="h-full flex flex-col items-center justify-center p-6 bg-orange-50">
+    <div className="h-full flex flex-col items-center justify-center p-6 bg-orange-50  rounded-lg">
       <div className="text-center max-w-md">
         <div className="flex justify-center mb-6">
           <div className="relative">

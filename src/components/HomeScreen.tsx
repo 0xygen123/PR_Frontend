@@ -54,7 +54,7 @@ const ErrorPopup = ({ isOpen, message, onClose }: { isOpen: boolean; message: st
 
 // --- Main HomeScreen Component ---
 
-export const HomeScreen = ({ onSearchClick, onQuickNavigation }: { onSearchClick: () => void; onQuickNavigation: (location: string) => void; }) => {
+export const HomeScreen = ({ onSearchClick}: { onSearchClick: () => void; }) => {
     // Unityのコンテキストを初期化し、sendMessage関数を取得
     const { unityProvider, sendMessage } = useUnityContext({
         loaderUrl: "Build/Build.loader.js",
@@ -147,12 +147,7 @@ export const HomeScreen = ({ onSearchClick, onQuickNavigation }: { onSearchClick
         sendMessage("JSInterface", "SetLocation", "");
     };
 
-    const quickLocations = [
-        { name: "図書館", icon: "📚" },
-        { name: "食堂", icon: "🍽️" },
-        { name: "事務室", icon: "🏢" },
-        { name: "体育館", icon: "🏃" },
-    ];
+
 
     return (
         <div className="h-full flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -210,24 +205,6 @@ export const HomeScreen = ({ onSearchClick, onQuickNavigation }: { onSearchClick
                 </div>
             </div>
 
-            {/* クイックアクション */}
-            <div className="p-4 space-y-2">
-                <h3 className="font-semibold mb-3 text-gray-800 dark:text-gray-200">
-                    よく使用される場所
-                </h3>
-                <div className="grid grid-cols-2 gap-2">
-                    {quickLocations.map((location) => (
-                        <Button
-                            key={location.name}
-                            onClick={() => onQuickNavigation(location.name)}
-                            className="flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                        >
-                            <span>{location.icon}</span>
-                            {location.name}
-                        </Button>
-                    ))}
-                </div>
-            </div>
         </div>
     );
 };
