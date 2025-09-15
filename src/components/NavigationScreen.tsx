@@ -131,6 +131,7 @@ export const NavigationScreen = ({ building, room, onBack }: { building: string;
     const fetchAndSendMessage = async () => {
         if (isLoaded && building && room) {
             // await を使って、findRoomの結果（Promise）が解決されるのを待つ
+            console.log(building + room);
             const unity_id = await findRoom(building, room);
 
             // unity_idが正常に取得できた場合のみメッセージを送信

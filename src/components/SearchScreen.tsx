@@ -104,6 +104,7 @@ export function SearchScreen({
 
       // Unityに建物IDを送信
       sendMessage("JSInterface","PathfindingRequested",building_id);
+      console.log(building_id);
       
       
     } catch (err) {
