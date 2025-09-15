@@ -57,7 +57,7 @@ const ErrorPopup = ({ isOpen, message, onClose }: { isOpen: boolean; message: st
 
 export const HomeScreen = ({ onSearchClick}: { onSearchClick: () => void;}) => {
     // Unityのコンテキストを初期化し、sendMessage関数を取得
-    const { unityProvider, sendMessage ,isLoaded} = useUnityContext({
+    const { unityProvider, sendMessage ,isLoaded, unload} = useUnityContext({
         loaderUrl: "/Build/54c707f8f74796c1b22158ff640ef3b7.loader.js",
         dataUrl: "/Build/81ba31f2fef3fc7aec33b79d2e84d79e.data",
         frameworkUrl: "/Build/d9661d51b1e138b59964585efd47b10a.framework.js",
@@ -76,6 +76,13 @@ export const HomeScreen = ({ onSearchClick}: { onSearchClick: () => void;}) => {
     const [popupMessage, setPopupMessage] = useState("");
 
     const [useOS, setUseOS] = useState("");
+
+        useEffect(() => {
+    return () => {
+        unload();
+    };
+}, [unload]);
+
 
     //デバイスを認識して、Unityに送信
     useEffect(() => {
@@ -157,10 +164,12 @@ export const HomeScreen = ({ onSearchClick}: { onSearchClick: () => void;}) => {
         setIsPopupOpen(false);
     };
 
+    /*
     // 空の座標を送信してエラーを発生させる関数
     const sendEmptyCoordinates = () => {
         sendMessage("JSInterface", "SetLocation", "");
     };
+    */
 
     return (
         <div className="h-full flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -226,12 +235,6 @@ export const HomeScreen = ({ onSearchClick}: { onSearchClick: () => void;}) => {
             </Card>
                     {/* 空の座標を送信するボタン */}
                     <div className="absolute top-4 right-4">
-                        <button
-                            onClick={sendEmptyCoordinates}
-                            className="px-4 py-2 bg-orange-500 text-white rounded-lg shadow-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50"
-                        >
-                            空の座標を送信
-                        </button>
                     </div>
                 </div>
             </div>

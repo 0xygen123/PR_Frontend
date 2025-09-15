@@ -141,7 +141,9 @@ export function SearchScreen({
   };
 
   // 建物一覧が読み込み中
-  if (loadingBuildings) return <div>建物一覧を読み込み中...</div>;
+  if (loadingBuildings) return <div>
+      建物一覧を読み込み中...
+      </div>;
 
   // 建物一覧取得に失敗した場合
   if (errorBuildings) return <div>建物一覧取得エラー: {errorBuildings}</div>;

@@ -95,7 +95,7 @@ const ErrorPopup = ({ isOpen, message, onClose }: { isOpen: boolean; message: st
 
 export const NavigationScreen = ({ building, room, onBack }: { building: string; room: string; onBack: () => void; }) => {
     // Unityのコンテキストを初期化し、sendMessage関数を取得
-    const { unityProvider, sendMessage, isLoaded } = useUnityContext({
+    const { unityProvider, sendMessage, isLoaded , unload} = useUnityContext({
         loaderUrl: "/Build/54c707f8f74796c1b22158ff640ef3b7.loader.js",
         dataUrl: "/Build/81ba31f2fef3fc7aec33b79d2e84d79e.data",
         frameworkUrl: "/Build/d9661d51b1e138b59964585efd47b10a.framework.js",
@@ -116,7 +116,13 @@ export const NavigationScreen = ({ building, room, onBack }: { building: string;
     //switch button
     const [switchButton, setswitchButton] = useState("2D");
 
-    // --- ここから追加 ---
+    useEffect(() => {
+    return () => {
+        unload();
+    };
+}, [unload]);
+
+
     /**
      * Unityの準備が完了したら、目的地を送信する
      */
@@ -293,17 +299,19 @@ export const NavigationScreen = ({ building, room, onBack }: { building: string;
                     </div> */}
 
                     {/*2D3D切り替えボタン */}
-                     <div className="absolute bottom-4 right-4">
+                {room && (
+                    <div className="absolute bottom-4 right-4">
                         <button
-                            onClick={() => {ViewSwitch(switchButton)}}
+                            onClick={() => { ViewSwitch(switchButton) }}
                             className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
                         >
                             {switchButton}に切り替え
                         </button>
                     </div>
-                    
-                </div>
+                )}
+
             </div>
         </div>
-    );
+    </div>
+);
 };
