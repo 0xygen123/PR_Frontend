@@ -62,6 +62,8 @@ export default function App() {
 
   /** 戻るボタンを押したらホームへ */
   const handleBackToHome = () => {
+    setSelectedBuilding("");
+    setSelectedRoom("");
     setCurrentScreen("home");
   };
 
@@ -145,6 +147,7 @@ export default function App() {
         return (
           <HomeScreen
             onSearchClick={handleSearchClick}
+            //onQuickNavigation={handleQuickNavigation}
           />
         );
     }

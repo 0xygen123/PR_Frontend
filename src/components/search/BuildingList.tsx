@@ -33,6 +33,7 @@ export function BuildingList() {
 
         const names = data.map(building => building.building_name);
         setBuildingNames(names);
+        console.log(names);
 
       } catch (err) {
         let errorMessage = '不明なエラーが発生しました';

@@ -103,7 +103,8 @@ export function SearchScreen({
       setSearchResults(results);
 
       // Unityに建物IDを送信
-      sendMessage("MapManager", "SetBuilding", building_id);
+      sendMessage("JSInterface","PathfindingRequested",building_id);
+      console.log(building_id);
       
       
     } catch (err) {
@@ -127,11 +128,11 @@ const handleRoomSelect = async (roomName: string) => {
     // 検索結果をその教室1つに絞る
     setSearchResults([selected]);
 
-    // Unityに building_Id-room_Id を送信
-    const payload = `${selected.building}-${selected.room}`;
-    sendMessage("MapManager", "SetRoom", payload);
-  }
-};
+      // Unityに buildingId + roomId を送信
+      const messageData = `${selected.building},${selected.room}`;
+      sendMessage("JSInterface","PathfindingRequested",messageData);
+    }
+  };
 
   /**
    * 案内開始処理
@@ -141,7 +142,9 @@ const handleRoomSelect = async (roomName: string) => {
   };
 
   // 建物一覧が読み込み中
-  if (loadingBuildings) return <div>建物一覧を読み込み中...</div>;
+  if (loadingBuildings) return <div>
+      建物一覧を読み込み中...
+      </div>;
 
   // 建物一覧取得に失敗した場合
   if (errorBuildings) return <div>建物一覧取得エラー: {errorBuildings}</div>;

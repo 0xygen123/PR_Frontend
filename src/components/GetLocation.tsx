@@ -1,16 +1,15 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 // 位置情報データの型定義
 interface GeolocationState {
-  latitude: number | null;            // 緯度
-  longitude: number | null;           // 経度
-  altitude: number | null;            // 高度
-  speed: number | null;               // 移動速度 (m/s)
-  heading: number | null;             // 移動方向 (0-360度)
-  accuracy: number | null;            //緯度・経度の精度
-  altitudeAccuracy: number | null;   //高度の精度
-  error:
-  string | null;
+  latitude: number | null;          // 緯度
+  longitude: number | null;         // 経度
+  altitude: number | null;          // 高度
+  speed: number | null;             // 移動速度 (m/s)
+  heading: number | null;           // 移動方向 (0-360度)
+  accuracy: number | null;          //緯度・経度の精度
+  altitudeAccuracy: number | null;  //高度の精度
+  error: string | null;
 }
 
 //sendMessage関数の型定義
@@ -50,7 +49,7 @@ const GetLocation: React.FC<GetLocationProps> = ({ sendMessage }) => {
 
     // 成功時のコールバック関数
     const handleSuccess = (position: GeolocationPosition) => {
-      const { latitude, longitude, altitude, speed, heading ,accuracy, altitudeAccuracy} = position.coords;
+      const { latitude, longitude, altitude, speed, heading, accuracy, altitudeAccuracy } = position.coords;
       setLocation({
         latitude,
         longitude,
@@ -90,10 +89,10 @@ const GetLocation: React.FC<GetLocationProps> = ({ sendMessage }) => {
         navigator.geolocation.clearWatch(watcherId);
       }
     };
-  }, []);
+  }, [sendMessage]);
 
     return (
-    <div>
+    <div style={{ marginTop: '20px', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}>
       <h2>あなたの現在地情報</h2>
       {location.error ? (
         <p style={{ color: "red" }}>{location.error}</p>
@@ -129,3 +128,4 @@ const GetLocation: React.FC<GetLocationProps> = ({ sendMessage }) => {
   );
 }
 export default GetLocation;
+

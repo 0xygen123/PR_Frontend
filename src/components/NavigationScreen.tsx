@@ -1,6 +1,58 @@
 import { useState, useEffect } from "react";
 import { Unity, useUnityContext } from "react-unity-webgl";
 
+const findRoom = async (building: string, room: string) => {
+  try {
+    const res = await fetch(`http://100.104.15.110:8080/api/buildings?name=${building}`);
+    //let unity_id = res.unity_id;
+    const Building_data = await res.json();
+    const Building_id = Building_data[0].id;
+
+    const res2 = await fetch(`http://100.104.15.110:8080/api/buildings/${Building_id}/rooms?name=${room}`);
+    const Room_data = await res2.json();
+    //本当はこれを送る
+    const unity_id = Room_data[0].unity_id;
+    
+    const newunity_id = unity_id.replace("-",",");
+    console.log(newunity_id);
+
+
+    // レスポンスが正常でない場合（404, 500エラーなど）
+    if (!res.ok) {
+      throw new Error('サーバーからの応答が正常ではありません。');
+    }
+
+    return newunity_id
+
+  } catch (err) {
+    // ネットワークエラーや上記でthrowしたエラーをキャッチ
+    console.error("部屋情報の取得に失敗しました:", err);
+    return null; // エラー発生時にnullを返す
+  }
+};
+
+const findBuilding = async (building: string) => {
+  try {
+    const res = await fetch(`http://100.104.15.110:8080/api/buildings?name=${building}`);
+    //let unity_id = res.unity_id;
+    const Building_data = await res.json();
+    const unity_id = Building_data[0].unity_id;
+    console.log(unity_id);
+
+    // レスポンスが正常でない場合（404, 500エラーなど）
+    if (!res.ok) {
+      throw new Error('サーバーからの応答が正常ではありません。');
+    }
+
+    return unity_id;
+
+  } catch (err) {
+    // ネットワークエラーや上記でthrowしたエラーをキャッチ
+    console.error("建物情報の取得に失敗しました:", err);
+    return null; // エラー発生時にnullを返す
+  }
+};
+
 // --- Type Definitions ---
 
 interface GeolocationState {
@@ -43,11 +95,11 @@ const ErrorPopup = ({ isOpen, message, onClose }: { isOpen: boolean; message: st
 
 export const NavigationScreen = ({ building, room, onBack }: { building: string; room: string; onBack: () => void; }) => {
     // Unityのコンテキストを初期化し、sendMessage関数を取得
-    const { unityProvider, sendMessage } = useUnityContext({
-        loaderUrl: "Build/Build.loader.js",
-        dataUrl: "Build/Build.data",
-        frameworkUrl: "Build/Build.framework.js",
-        codeUrl: "Build/Build.wasm",
+    const { unityProvider, sendMessage, isLoaded , unload} = useUnityContext({
+        loaderUrl: "/Build/54c707f8f74796c1b22158ff640ef3b7.loader.js",
+        dataUrl: "/Build/81ba31f2fef3fc7aec33b79d2e84d79e.data",
+        frameworkUrl: "/Build/d9661d51b1e138b59964585efd47b10a.framework.js",
+        codeUrl: "/Build/3a35eb2958e942bd069bcb9a514adb14.wasm",
     });
 
     // 位置情報用のState
@@ -60,6 +112,55 @@ export const NavigationScreen = ({ building, room, onBack }: { building: string;
     // ポップアップ表示用のState
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [popupMessage, setPopupMessage] = useState("");
+
+    //switch button
+    const [switchButton, setswitchButton] = useState("2D");
+
+    useEffect(() => {
+    return () => {
+        unload();
+    };
+}, [unload]);
+
+
+    /**
+     * Unityの準備が完了したら、目的地を送信する
+     */
+    useEffect(() => {
+    // useEffectの中で非同期処理を行うためのasync関数を定義
+    const fetchAndSendMessage = async () => {
+        if (isLoaded && building && room) {
+            // await を使って、findRoomの結果（Promise）が解決されるのを待つ
+            console.log(building + room);
+            const unity_id = await findRoom(building, room);
+
+            // unity_idが正常に取得できた場合のみメッセージを送信
+            if (unity_id) {
+                sendMessage("JSInterface", "PathfindingRequested", unity_id);
+                console.log(`Unityに目的地IDを送信しました: ${unity_id}`);
+            } else {
+                console.error("Unity IDの取得に失敗したため、メッセージは送信されませんでした。");
+            }
+        }
+
+        if(isLoaded && building && !room){
+            const unity_id = await findBuilding(building);
+
+            // unity_idが正常に取得できた場合のみメッセージを送信
+            if (unity_id) {
+                sendMessage("JSInterface", "PathfindingRequested", unity_id);
+                console.log(`Unityに目的地IDを送信しました: ${unity_id}`);
+            } else {
+                console.error("Unity IDの取得に失敗したため、メッセージは送信されませんでした。");
+            }
+        }
+    };
+
+    // 定義した非同期関数を実行
+    fetchAndSendMessage();
+
+}, [isLoaded, building, room, sendMessage]);
+
 
     // Unityからのメッセージを監視するuseEffect
     useEffect(() => {
@@ -114,9 +215,22 @@ export const NavigationScreen = ({ building, room, onBack }: { building: string;
     };
 
     // 空の座標を送信してエラーを発生させる関数
+    /*
     const sendEmptyCoordinates = () => {
         sendMessage("JSInterface", "SetLocation", "");
     };
+    */
+
+    const ViewSwitch = (currentView : string) => {
+        if(currentView === "2D"){
+            sendMessage("JSInterface", "SwitchToPlaneView");
+            setswitchButton("3D");
+        }
+        else{
+            sendMessage("JSInterface", "SwitchToSolidView");
+            setswitchButton("2D");
+        }
+    }
 
     return (
         <div className="h-full flex flex-col">
@@ -137,43 +251,68 @@ export const NavigationScreen = ({ building, room, onBack }: { building: string;
             </div>
 
             {/* Unityアプリケーション表示エリア */}
-            <div className="flex-1 min-h-0 px-4 py-8">
+            <div className="flex-1 min-h-0">
                 <div className="w-full h-full bg-gray-900 rounded-lg relative overflow-hidden">
                     <Unity unityProvider={unityProvider} className="w-full h-full" />
-                    {/* 目的地表示カード */}
-                    <div className="absolute top-4 left-4 bg-white p-3 rounded-lg shadow-md flex items-center gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="currentColor" className="h-5 w-5 text-blue-500 -rotate-90">
-                            <path d="M2 21l20-9L2 3v7l11 2-11 2v7z" />
-                        </svg>
-                        <div>
-                            <p className="text-sm text-gray-500">目的地</p>
-                            <p className="font-semibold">{building} {room}</p>
-                        </div>
-                    </div>
-                    {/* 現在地表示カード */}
-                    <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-md flex items-center gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-green-600"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
-                        <div>
-                            <p className="text-sm text-gray-500">現在地</p>
-                            <p className="font-semibold text-sm">
-                                {location.error ? <span className="text-red-500">{location.error}</span> :
-                                 location.latitude && location.longitude
-                                    ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`
-                                    : "取得中..."}
-                            </p>
-                        </div>
-                    </div>
+            {/* 目的地表示カード */}
+            <div className="absolute top-4 left-4 bg-white p-3 rounded-lg shadow-md flex items-center gap-3 max-w-xs">
+                
+                <div className="flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-blue-500">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+                </div>
+                
+                <div>
+                    <p className="text-sm text-gray-500">目的地</p>
+                    <p className="font-semibold truncate">{building} {room}</p>
+                </div>
+            </div>
+
+            {/* 現在地表示カード */}
+            <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-md flex items-center gap-3 max-w-xs">
+                <div className="flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7 text-green-600">
+                        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                        <circle cx="12" cy="10" r="3" />
+                    </svg>
+                </div>
+                <div>
+                    <p className="text-sm text-gray-500">現在地</p>
+                    <p className="font-semibold text-sm truncate">
+                        {location.error ? <span className="text-red-500">{location.error}</span> :
+                            location.latitude && location.longitude
+                                ? `${location.latitude.toFixed(2)}, ${location.longitude.toFixed(2)}`
+                                : "取得中..."}
+                    </p>
+                </div>
+            </div>
+                    {/*
                     {/* 空の座標を送信するボタン */}
-                    <div className="absolute bottom-4 right-4">
+                    {/* <div className="absolute bottom-4 right-4">
                         <button
                             onClick={sendEmptyCoordinates}
                             className="px-4 py-2 bg-orange-500 text-white rounded-lg shadow-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50"
                         >
                             空の座標を送信
                         </button>
+                    </div> */}
+
+                    {/*2D3D切り替えボタン */}
+                {room && (
+                    <div className="absolute bottom-4 right-4">
+                        <button
+                            onClick={() => { ViewSwitch(switchButton) }}
+                            className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                        >
+                            {switchButton}に切り替え
+                        </button>
                     </div>
-                </div>
+                )}
+
             </div>
         </div>
-    );
+    </div>
+);
 };

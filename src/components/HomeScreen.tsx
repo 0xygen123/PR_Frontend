@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { Unity, useUnityContext } from "react-unity-webgl";
+import {isMobile} from "react-device-detect";
+import {osName} from "react-device-detect";
 
 // --- Type Definitions ---
 
@@ -51,16 +53,15 @@ const ErrorPopup = ({ isOpen, message, onClose }: { isOpen: boolean; message: st
     );
 };
 
+/** --- Main HomeScreen Component --- */
 
-// --- Main HomeScreen Component ---
-
-export const HomeScreen = ({ onSearchClick}: { onSearchClick: () => void; }) => {
+export const HomeScreen = ({ onSearchClick}: { onSearchClick: () => void;}) => {
     // Unityのコンテキストを初期化し、sendMessage関数を取得
-    const { unityProvider, sendMessage } = useUnityContext({
-        loaderUrl: "Build/Build.loader.js",
-        dataUrl: "Build/Build.data",
-        frameworkUrl: "Build/Build.framework.js",
-        codeUrl: "Build/Build.wasm",
+    const { unityProvider, sendMessage ,isLoaded, unload} = useUnityContext({
+        loaderUrl: "/Build/54c707f8f74796c1b22158ff640ef3b7.loader.js",
+        dataUrl: "/Build/81ba31f2fef3fc7aec33b79d2e84d79e.data",
+        frameworkUrl: "/Build/d9661d51b1e138b59964585efd47b10a.framework.js",
+        codeUrl: "/Build/3a35eb2958e942bd069bcb9a514adb14.wasm",
     });
 
     // 位置情報用のState
@@ -73,6 +74,27 @@ export const HomeScreen = ({ onSearchClick}: { onSearchClick: () => void; }) => 
     // ポップアップ表示用のState
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [popupMessage, setPopupMessage] = useState("");
+
+    const [useOS, setUseOS] = useState("");
+
+        useEffect(() => {
+    return () => {
+        unload();
+    };
+}, [unload]);
+
+
+    //デバイスを認識して、Unityに送信
+    useEffect(() => {
+        if(isLoaded){
+            console.log("Desktop OS Detected");
+            console.log(osName);
+            setUseOS(osName);
+        }else if(isLoaded && isMobile){
+            console.log("Mobile Device Detected");
+        }
+
+    }, [isLoaded]);
 
     // Unityからのメッセージを監視するuseEffect
     useEffect(() => {
@@ -142,10 +164,12 @@ export const HomeScreen = ({ onSearchClick}: { onSearchClick: () => void; }) => 
         setIsPopupOpen(false);
     };
 
+    /*
     // 空の座標を送信してエラーを発生させる関数
     const sendEmptyCoordinates = () => {
         sendMessage("JSInterface", "SetLocation", "");
     };
+    */
 
 
 
@@ -159,52 +183,68 @@ export const HomeScreen = ({ onSearchClick}: { onSearchClick: () => void; }) => 
             {/* ヘッダー */}
             <div className="bg-red-700 text-white p-4">
                 <h1 className="flex items-center gap-2 text-xl font-bold">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
                     キャンパスナビ
                 </h1>
             </div>
 
             {/* 検索バー */}
-            <div className="p-4">
-                <Button
-                    onClick={onSearchClick}
-                    className="w-full flex justify-start items-center text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 mr-2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
-                    建物・教室を検索
-                </Button>
-            </div>
+<div className="p-4">
+    <Button
+        onClick={onSearchClick}
+        className="w-full flex justify-start items-center text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+    >
+        <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            width="24" 
+            height="24" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            className="w-5 h-5 mr-2"
+        >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+        </svg>
+        建物・教室を検索
+    </Button>
+</div>
 
             {/* Unityアプリケーション表示エリア */}
             <div className="flex-1 min-h-0 p-4">
                 <div className="w-full h-full bg-gray-900 rounded-lg relative overflow-hidden">
                     <Unity unityProvider={unityProvider} className="w-full h-full" />
-                    <Card className="absolute top-4 left-4 p-3">
-                        <div className="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-blue-600"><path d="m3 11 18-5v12L3 14v-3z" /><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" /></svg>
-                            <div>
-                                <p className="font-medium text-gray-800">現在地</p>
-                                <p className="text-gray-500 text-sm">
-                                    {location.error ? <span className="text-red-500">{location.error}</span> :
-                                     location.latitude && location.longitude
-                                        ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`
-                                        : "位置情報を取得中..."}
-                                </p>
-                            </div>
-                        </div>
-                    </Card>
+            <Card className="absolute top-4 left-4 p-3">
+                <div className="flex items-center gap-2">
+                    {/* アイコン部分 */}
+                    <div className="flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7 text-blue-600"><path d="m3 11 18-5v12L3 14v-3z" /><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" /></svg>
+                    </div>
+                    {/* テキスト部分 */}
+                    <div>
+                        <p className="font-medium text-gray-800">現在地</p>
+                        <p className="text-gray-500 text-sm">
+                            {location.error ? <span className="text-red-500">{location.error}</span> :
+                                location.latitude && location.longitude
+                                    ? `${location.latitude.toFixed(2)}, ${location.longitude.toFixed(2)}`
+                                    : "位置情報を取得中..."}
+                        </p>
+                    </div>
+                </div>
+            </Card>
                     {/* 空の座標を送信するボタン */}
                     <div className="absolute top-4 right-4">
-                        <button
-                            onClick={sendEmptyCoordinates}
-                            className="px-4 py-2 bg-orange-500 text-white rounded-lg shadow-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50"
-                        >
-                            空の座標を送信
-                        </button>
                     </div>
                 </div>
             </div>
 
-        </div>
+
+                <div>
+                    <p>使用OS: {useOS}</p>
+                </div>
+            </div>
     );
 };
