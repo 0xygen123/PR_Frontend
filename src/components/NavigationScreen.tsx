@@ -3,12 +3,12 @@ import { Unity, useUnityContext } from "react-unity-webgl";
 
 const findRoom = async (building: string, room: string) => {
   try {
-    const res = await fetch(`http://100.104.15.110:8080/api/buildings?name=${building}`);
+    const res = await fetch(`https://r-navi.math.ryukoku.ac.jp/api/buildings?name=${building}`);
     //let unity_id = res.unity_id;
     const Building_data = await res.json();
     const Building_id = Building_data[0].id;
 
-    const res2 = await fetch(`http://100.104.15.110:8080/api/buildings/${Building_id}/rooms?name=${room}`);
+    const res2 = await fetch(`https://r-navi.math.ryukoku.ac.jp/api/buildings/${Building_id}/rooms?name=${room}`);
     const Room_data = await res2.json();
     //本当はこれを送る
     const unity_id = Room_data[0].unity_id;
@@ -33,7 +33,7 @@ const findRoom = async (building: string, room: string) => {
 
 const findBuilding = async (building: string) => {
   try {
-    const res = await fetch(`http://100.104.15.110:8080/api/buildings?name=${building}`);
+    const res = await fetch(`https://r-navi.math.ryukoku.ac.jp/api/buildings?name=${building}`);
     //let unity_id = res.unity_id;
     const Building_data = await res.json();
     const unity_id = Building_data[0].unity_id;
