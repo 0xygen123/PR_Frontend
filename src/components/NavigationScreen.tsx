@@ -12,9 +12,6 @@ const findRoom = async (building: string, room: string) => {
     const Room_data = await res2.json();
     //本当はこれを送る
     const unity_id = Room_data[0].unity_id;
-    
-    const newunity_id = unity_id.replace("-",",");
-    console.log(newunity_id);
 
 
     // レスポンスが正常でない場合（404, 500エラーなど）
@@ -22,7 +19,7 @@ const findRoom = async (building: string, room: string) => {
       throw new Error('サーバーからの応答が正常ではありません。');
     }
 
-    return newunity_id
+    return unity_id;
 
   } catch (err) {
     // ネットワークエラーや上記でthrowしたエラーをキャッチ
@@ -96,10 +93,10 @@ const ErrorPopup = ({ isOpen, message, onClose }: { isOpen: boolean; message: st
 export const NavigationScreen = ({ building, room, onBack }: { building: string; room: string; onBack: () => void; }) => {
     // Unityのコンテキストを初期化し、sendMessage関数を取得
     const { unityProvider, sendMessage, isLoaded , unload} = useUnityContext({
-        loaderUrl: "/Build/54c707f8f74796c1b22158ff640ef3b7.loader.js",
-        dataUrl: "/Build/81ba31f2fef3fc7aec33b79d2e84d79e.data",
-        frameworkUrl: "/Build/d9661d51b1e138b59964585efd47b10a.framework.js",
-        codeUrl: "/Build/3a35eb2958e942bd069bcb9a514adb14.wasm",
+        loaderUrl: "/Build/32160957d7615fe513f02bf586265581.loader.js",
+        dataUrl: "/Build/13ca0e9a1a458f5bad5ffe9430b8c2d2.data",
+        frameworkUrl: "/Build/ff7fe9b3adfc04d8884eb581e15ef72a.framework.js",
+        codeUrl: "/Build/9e50576a43c954fe662b660684834225.wasm",
     });
 
     // 位置情報用のState
