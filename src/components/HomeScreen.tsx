@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Unity, useUnityContext } from "react-unity-webgl";
-import {isMobile} from "react-device-detect";
 import {osName} from "react-device-detect";
 
 // --- Type Definitions ---
@@ -75,8 +74,6 @@ export const HomeScreen = ({ onSearchClick}: { onSearchClick: () => void;}) => {
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [popupMessage, setPopupMessage] = useState("");
 
-    const [useOS, setUseOS] = useState("");
-
         useEffect(() => {
     return () => {
         unload();
@@ -87,15 +84,10 @@ export const HomeScreen = ({ onSearchClick}: { onSearchClick: () => void;}) => {
     //デバイスを認識して、Unityに送信
     useEffect(() => {
         if(isLoaded){
-            console.log("Desktop OS Detected");
-            console.log(osName);
-            setUseOS(osName);
-        }else if(isLoaded && isMobile){
-            console.log("Mobile Device Detected");
+            sendMessage("JSInterface", "SetUserDevice", osName);
         }
 
     }, [isLoaded]);
-
     // Unityからのメッセージを監視するuseEffect
     useEffect(() => {
         const handleUnityMessage = (event: Event) => {
@@ -235,16 +227,10 @@ export const HomeScreen = ({ onSearchClick}: { onSearchClick: () => void;}) => {
                     </div>
                 </div>
             </Card>
-                    {/* 空の座標を送信するボタン */}
                     <div className="absolute top-4 right-4">
                     </div>
                 </div>
             </div>
-
-
-                <div>
-                    <p>使用OS: {useOS}</p>
-                </div>
             </div>
     );
 };
