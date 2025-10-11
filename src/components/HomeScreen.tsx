@@ -163,7 +163,9 @@ export const HomeScreen = ({ onSearchClick}: { onSearchClick: () => void;}) => {
     };
     */
 
-
+    const FollowUser = () => {
+        sendMessage("JSInterface", "FollowToUser");
+    }
 
     return (
         <div className="h-full flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -210,7 +212,9 @@ export const HomeScreen = ({ onSearchClick}: { onSearchClick: () => void;}) => {
                 <div className="w-full h-full bg-gray-900 rounded-lg relative overflow-hidden">
                     <Unity unityProvider={unityProvider} className="w-full h-full" />
             <Card className="absolute top-4 left-4 p-3">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 cursor-pointer"
+                onClick ={FollowUser}
+                >
                     {/* アイコン部分 */}
                     <div className="flex-shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7 text-blue-600"><path d="m3 11 18-5v12L3 14v-3z" /><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" /></svg>
