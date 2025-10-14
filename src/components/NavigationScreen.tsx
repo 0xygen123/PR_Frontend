@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Unity, useUnityContext } from "react-unity-webgl";
+import {osName} from "react-device-detect";
 
 const findRoom = async (building: string, room: string) => {
   try {
@@ -124,6 +125,7 @@ export const NavigationScreen = ({ building, room, onBack }: { building: string;
      * Unityの準備が完了したら、目的地を送信する
      */
     useEffect(() => {
+        
     // useEffectの中で非同期処理を行うためのasync関数を定義
     const fetchAndSendMessage = async () => {
         if (isLoaded && building && room) {
@@ -157,6 +159,14 @@ export const NavigationScreen = ({ building, room, onBack }: { building: string;
     fetchAndSendMessage();
 
 }, [isLoaded, building, room, sendMessage]);
+
+    //デバイスを認識して、Unityに送信
+    useEffect(() => {
+        if(isLoaded){
+            sendMessage("JSInterface", "SetUserDevice", osName);
+        }
+
+    }, [isLoaded]);
 
 
     // Unityからのメッセージを監視するuseEffect
@@ -229,6 +239,9 @@ export const NavigationScreen = ({ building, room, onBack }: { building: string;
         }
     }
 
+    const FollowtoUser = () => {
+        sendMessage("JSInterface", "FollowToUser");
+    }
     return (
         <div className="h-full flex flex-col">
             <ErrorPopup
@@ -268,7 +281,9 @@ export const NavigationScreen = ({ building, room, onBack }: { building: string;
             </div>
 
             {/* 現在地表示カード */}
-            <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-md flex items-center gap-3 max-w-xs">
+            <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-md flex items-center gap-3 max-w-xs"
+            onClick={FollowtoUser}
+            >
                 <div className="flex-shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7 text-green-600">
                         <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
