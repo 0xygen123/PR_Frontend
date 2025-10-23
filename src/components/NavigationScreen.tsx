@@ -93,11 +93,11 @@ const ErrorPopup = ({ isOpen, message, onClose }: { isOpen: boolean; message: st
 
 export const NavigationScreen = ({ building, room, onBack }: { building: string; room: string; onBack: () => void; }) => {
     // Unityのコンテキストを初期化し、sendMessage関数を取得
-    const { unityProvider, sendMessage, isLoaded , unload} = useUnityContext({
-        loaderUrl: "/Build/32160957d7615fe513f02bf586265581.loader.js",
-        dataUrl: "/Build/13ca0e9a1a458f5bad5ffe9430b8c2d2.data",
-        frameworkUrl: "/Build/ff7fe9b3adfc04d8884eb581e15ef72a.framework.js",
-        codeUrl: "/Build/9e50576a43c954fe662b660684834225.wasm",
+    const { unityProvider, sendMessage, unload} = useUnityContext({
+        loaderUrl: "/Build/b6cf73e983dbc4b68e972c5c2c5add8d.loader.js",
+        dataUrl: "/Build/469be7a921709f91a18e7f222e828db8.data",
+        frameworkUrl: "/Build/470ba071bb95eb745b267c99af5f081f.framework.js",
+        codeUrl: "/Build/1dba53c8f36b24d7a4cc51db313b7ac4.wasm",
     });
 
     // 位置情報用のState
@@ -110,6 +110,7 @@ export const NavigationScreen = ({ building, room, onBack }: { building: string;
     // ポップアップ表示用のState
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [popupMessage, setPopupMessage] = useState("");
+    const [isUnityReady, setIsUnityReady] = useState(false);
 
     //switch button
     const [switchButton, setswitchButton] = useState("2D");
@@ -128,7 +129,7 @@ export const NavigationScreen = ({ building, room, onBack }: { building: string;
         
     // useEffectの中で非同期処理を行うためのasync関数を定義
     const fetchAndSendMessage = async () => {
-        if (isLoaded && building && room) {
+        if (isUnityReady && building && room) {
             // await を使って、findRoomの結果（Promise）が解決されるのを待つ
             console.log(building + room);
             const unity_id = await findRoom(building, room);
@@ -142,7 +143,7 @@ export const NavigationScreen = ({ building, room, onBack }: { building: string;
             }
         }
 
-        if(isLoaded && building && !room){
+        if(isUnityReady && building && !room){
             const unity_id = await findBuilding(building);
 
             // unity_idが正常に取得できた場合のみメッセージを送信
@@ -158,63 +159,86 @@ export const NavigationScreen = ({ building, room, onBack }: { building: string;
     // 定義した非同期関数を実行
     fetchAndSendMessage();
 
-}, [isLoaded, building, room, sendMessage]);
+}, [isUnityReady, building, room, sendMessage]);
 
     //デバイスを認識して、Unityに送信
     useEffect(() => {
-        if(isLoaded){
+        if(isUnityReady){
             sendMessage("JSInterface", "SetUserDevice", osName);
         }
 
-    }, [isLoaded]);
+    }, [isUnityReady]);
 
 
-    // Unityからのメッセージを監視するuseEffect
+// Unityからのメッセージを監視するuseEffect
     useEffect(() => {
-        const handleUnityMessage = (event: Event) => {
+         const handleUnityMessage = (event: Event) => {
             const customEvent = event as CustomEvent<UnityMessagePayload>;
-            if (customEvent.detail && customEvent.detail.message) {
-                console.log("Unityからイベントを受信:", customEvent.detail);
-                setPopupMessage(customEvent.detail.message);
+            // ★ `onUnityLoaded` を処理するロジックに変更
+            if (!customEvent.detail) return; 
+
+            const { functionName, message } = customEvent.detail;
+            console.log("Unityからイベントを受信:", functionName, message);
+
+        // ★ 'onUnityLoaded' を受信したら isUnityReady を true にする
+            if (functionName === "onUnityLoaded") {
+            console.log("Unityの準備完了通知を受信！");
+            setIsUnityReady(true);
+            } 
+        // 'onUnityLoaded' 以外のメッセージ（エラーなど）が来た場合の処理
+            else if (message) {
+                setPopupMessage(message);
                 setIsPopupOpen(true);
             }
-        };
+    };
 
-        window.addEventListener('unity-message', handleUnityMessage);
-        return () => {
-            window.removeEventListener('unity-message', handleUnityMessage);
-        };
-    }, []); // コンポーネントのマウント時に一度だけ実行
+    window.addEventListener('unity-message', handleUnityMessage);
+    return () => {
+      window.removeEventListener('unity-message', handleUnityMessage);
+    };
+  }, []); // 依存配列は空のままでOK
 
-    // 位置情報の監視とUnityへの送信を行うuseEffect
-    useEffect(() => {
-        if (!navigator.geolocation) {
-            setLocation((prev) => ({ ...prev, error: "お使いのブラウザは位置情報機能に対応していません。" }));
-            return;
-        }
-        let watcherId: number | null = null;
-        const handleSuccess = (position: GeolocationPosition) => {
-            const { latitude, longitude } = position.coords;
-            setLocation({ latitude, longitude, error: null });
-            if (latitude !== null && longitude !== null) {
-                const locationString = `${latitude},${longitude}`;
-                sendMessage("JSInterface", "SetLocation", locationString);
-            }
-        };
-        const handleError = (error: GeolocationPositionError) => {
-            setLocation((prev) => ({ ...prev, error: `位置情報の取得に失敗しました: ${error.message}` }));
-        };
-        watcherId = navigator.geolocation.watchPosition(handleSuccess, handleError, {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0,
-        });
-        return () => {
-            if (watcherId) {
-                navigator.geolocation.clearWatch(watcherId);
-            }
-        };
-    }, [sendMessage]);
+// 位置情報の監視とUnityへの送信を行うuseEffect
+  useEffect(() => {
+    // ★ Unityの準備が完了していない場合は、何もしない
+    if (!isUnityReady) {
+      console.log("Unity準備待機中... 位置情報監視は開始しません。");
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      setLocation((prev) => ({ ...prev, error: "お使いのブラウザは位置情報機能に対応していません。" }));
+      return;
+    }
+
+    console.log("Unity準備完了。位置情報の監視を開始します。");
+    let watcherId: number | null = null;
+    const handleSuccess = (position: GeolocationPosition) => {
+      const { latitude, longitude } = position.coords;
+      setLocation({ latitude, longitude, error: null });
+      if (latitude !== null && longitude !== null) {
+        const locationString = `${latitude},${longitude}`;
+        // console.log("Unityへ位置情報を送信:", locationString); // ログが多い場合はコメントアウト
+        sendMessage("JSInterface", "SetLocation", locationString);
+      }
+    };
+    const handleError = (error: GeolocationPositionError) => {
+      setLocation((prev) => ({ ...prev, error: `位置情報の取得に失敗しました: ${error.message}` }));
+    };
+    watcherId = navigator.geolocation.watchPosition(handleSuccess, handleError, {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0,
+    });
+    return () => {
+      if (watcherId) {
+        console.log("位置情報の監視を停止します。");
+        navigator.geolocation.clearWatch(watcherId);
+      }
+    };
+  // ★ 依存配列に isUnityReady を追加
+  }, [isUnityReady, sendMessage]);
+
 
     // ポップアップを閉じる関数
     const handleClosePopup = () => {

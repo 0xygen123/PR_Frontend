@@ -31,12 +31,6 @@ export default function App() {
   // 選択された教室や場所（例: 1階総合受付、学生課など）
   const [selectedRoom, setSelectedRoom] = useState<string>("");
 
-  // ダークモードのON/OFFを管理
-  const [darkMode, setDarkMode] = useState(false);
-
-  // ダークモード切替関数
-  const toggleTheme = () => setDarkMode(!darkMode);
-
   // アプリ起動時にスプラッシュ画面を表示 → 2秒後にホーム画面に切替
   const [alertOpen, setAlertOpen] = useState(false);
   useEffect(() => {
@@ -70,11 +64,6 @@ export default function App() {
   /** 案内開始ボタンを押したら案内画面へ */
   const handleStartNavigation = () => {
     setCurrentScreen("navigation");
-  };
-
-  /** Unityテスト画面へ移動 */
-  const handleNavigateToUnity = () => {
-    setCurrentScreen("unity");
   };
 
 
@@ -155,26 +144,7 @@ export default function App() {
 
   return (
     // App全体を縦方向のflexコンテナに変更
-    <div className={`${darkMode ? 'dark' : ''} h-screen w-full bg-background flex flex-col`}>
-      
-      {/* 上部のボタン類を配置するヘッダーエリア */}
-      <div className="p-4">
-        {/* ダークモード切替ボタン */}
-        <button
-          onClick={toggleTheme}
-          className="mb-4 px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-black dark:text-white"
-        >
-          {darkMode ? 'ライトモードに切替' : 'ダークモードに切替'}
-        </button>
-
-        {/* Unityテスト画面へ遷移するボタン */}
-        <button
-          onClick={handleNavigateToUnity}
-          className="mb-4 ml-2 px-4 py-2 rounded bg-blue-600 text-white"
-        >
-          Unityのテスト動作
-        </button>
-      </div>
+    <div className={`h-screen w-full bg-background flex flex-col`}>
 
       {/* 各画面を描画するメインエリア */}
       {/* flex-1 を指定して、残りの高さいっぱいに広がるように設定 */}
