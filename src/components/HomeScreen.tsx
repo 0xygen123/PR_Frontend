@@ -498,7 +498,7 @@ export const HomeScreen = () => {
 
                     {/* ★ 2D/3D切り替えボタン を配置 */}
                     <div className="absolute top-4 right-4">
-                        {isUnityReady && (
+                        {selectedBuilding && selectedRoom && isUnityReady && (
                             <Button
                                 onClick={() => { ViewSwitch(switchButton) }}
                                 // ★ TailwindCSSのクラスを調整 (Cardと似た外観に)
