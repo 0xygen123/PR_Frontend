@@ -94,10 +94,10 @@ const ErrorPopup = ({ isOpen, message, onClose }: { isOpen: boolean; message: st
 export const NavigationScreen = ({ building, room, onBack }: { building: string; room: string; onBack: () => void; }) => {
     // Unityのコンテキストを初期化し、sendMessage関数を取得
     const { unityProvider, sendMessage, unload} = useUnityContext({
-        loaderUrl: "/Build/b6cf73e983dbc4b68e972c5c2c5add8d.loader.js",
-        dataUrl: "/Build/469be7a921709f91a18e7f222e828db8.data",
-        frameworkUrl: "/Build/470ba071bb95eb745b267c99af5f081f.framework.js",
-        codeUrl: "/Build/1dba53c8f36b24d7a4cc51db313b7ac4.wasm",
+        loaderUrl: "/Build/3517d7a01a316e5bf9186dfad0c60e87.loader.js",
+        dataUrl: "/Build/72b8084547a26c4d11625e36e4ebec30.data",
+        frameworkUrl: "/Build/44fdf7c87db8aaf4789a6cc8968a3b46.framework.js",
+        codeUrl: "/Build/7e5429539ecbb895932239683ce6971a.wasm",
     });
 
     // 位置情報用のState
